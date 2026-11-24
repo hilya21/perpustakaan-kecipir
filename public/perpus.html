@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perpustakaan Kecipir</title>
+<style>
+:root {
+  --cok: #6b3d2a;
+  --cok2: #8a5238;
+  --krem: #fbf1e6;
+  --krem2: #f6ebd8;
+  --teks: #4a2b1d;
+  --abu: #8c7468;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: var(--teks); display: flex; flex-direction: column; }
+section { flex: 1 0 auto; }
+.hidden { display: none !important; }
+
+/* HEADER */
+header { background: var(--cok); color: #fff; display: flex; align-items: center; gap: 20px; padding: 16px 50px; position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+.logo { font-size: 22px; font-weight: 700; margin-right: auto; display: flex; align-items: center; gap: 10px; }
+.logo img { width: 32px; height: 32px; filter: invert(1); }
+nav { display: flex; gap: 8px; flex-wrap: wrap; }
+nav a { padding: 8px 20px; border-radius: 99px; cursor: pointer; color: #fff; font-size: 15px; text-decoration: none; }
+nav a.aktif { background: var(--krem); color: var(--cok); font-weight: 600; }
+
+/* PENCARIAN */
+.cari { display: flex; background: #fff; border-radius: 99px; overflow: hidden; align-items: center; padding: 4px 16px; margin-left: 10px; }
+.cari input { border: 0; padding: 8px 0; outline: 0; width: 220px; font-size: 14px; margin: 0; color: var(--teks); }
+.cari button { background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer; border: none; }
+.cari button img { width: 18px; height: 18px; opacity: 0.8; }
+
+/* TOMBOL UMUM */
+button { background: var(--cok2); color: #fff; border: 0; padding: 12px 24px; border-radius: 99px; cursor: pointer; font-size: 15px; font-weight: 600; transition: 0.2s; }
+button:hover { opacity: 0.9; }
+header button.masuk { background: var(--krem); color: var(--cok); padding: 8px 20px; }
+button.abu { background: #ead9cc; color: var(--cok); }
+button.merah { background: #b3261e; }
+button.kecil { padding: 6px 14px; font-size: 12px; }
+button.garis { background: transparent; color: var(--cok); border: 1.5px solid var(--cok); }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* TOMBOL KEMBALI */
+.kiri { display: flex; align-items: center; }
+.kembali { width: 42px; height: 42px; padding: 0; border-radius: 50%; background: var(--krem); color: var(--cok); border: 1.5px solid #eaddd3; display: flex; align-items: center; justify-content: center; margin-right: 16px; flex: none; }
+.kembali:hover { background: var(--cok); color: #fff; opacity: 1; }
+.kembali svg { width: 22px; height: 22px; }
+
+/* DROPDOWN AKUN */
+.akun-menu { position: relative; display: flex; align-items: center; }
+.akun-btn { background: transparent; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.akun-btn img { width: 32px; height: 32px; border-radius: 50%; background: var(--krem); padding: 4px; border: 2px solid var(--krem2); }
+.dropdown-konten { display: none; position: absolute; top: 45px; right: 0; background: #fff; min-width: 220px; border-radius: 12px; box-shadow: 0 8px 24px rgba(107,61,42,0.15); border: 1px solid #eaddd3; overflow: hidden; z-index: 10; flex-direction: column; }
+.dropdown-konten.tampil { display: flex; }
+.dropdown-info { padding: 16px; background: var(--krem); border-bottom: 1px solid #eaddd3; }
+.dropdown-info b { display: block; color: var(--cok); font-size: 14px; margin-bottom: 2px; }
+.dropdown-info span { color: var(--abu); font-size: 12px; }
+.dropdown-item { padding: 12px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--teks); font-size: 14px; font-weight: 500; transition: 0.2s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; border-radius: 0; }
+.dropdown-item img { width: 16px; height: 16px; filter: invert(28%) sepia(23%) saturate(1450%) hue-rotate(338deg) brightness(97%) contrast(89%); }
+.dropdown-item:hover { background: var(--krem); color: var(--cok); opacity: 1; }
+
+/* HERO SECTION */
+.hero { background: var(--krem); display: flex; align-items: center; justify-content: space-between; padding: 60px 80px; gap: 20px; flex-wrap: wrap; position: relative; overflow: hidden; }
+.hero > div { z-index: 2; }
+.hero h1 { font-size: 48px; margin: 0 0 16px; color: var(--cok); line-height: 1.1; max-width: 600px; }
+.hero p { font-size: 22px; margin: 0 0 32px; color: var(--cok2); }
+.hero button { background: var(--cok); padding: 14px 32px; font-size: 16px; }
+.hero svg { width: min(450px, 90%); height: auto; z-index: 1; }
+
+/* TATA LETAK */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 30px; width: 100%; }
+.baris { display: flex; justify-content: space-between; align-items: center; margin: 50px 0 24px; }
+.judul { display: flex; align-items: center; font-size: 30px; margin: 0; color: var(--cok); font-weight: 700; }
+.judul::before { content: ''; display: inline-block; width: 8px; height: 32px; background: var(--cok); border-radius: 8px; margin-right: 16px; }
+
+/* KARTU KATEGORI */
+.kat { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 50px; }
+.kat div { background: #fff; border: 1px solid #eaddd3; border-radius: 16px; padding: 30px 10px 24px; text-align: center; cursor: pointer; font-size: 18px; font-weight: 600; color: var(--cok); box-shadow: 0 4px 12px rgba(107, 61, 42, 0.04); transition: 0.2s; }
+.kat div:hover, .kat div.aktif { background: var(--krem); border-color: var(--cok2); transform: translateY(-3px); }
+.kat svg { width: 90px; height: 90px; display: block; margin: 0 auto 16px; }
+
+/* CHIPS (Filter) */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+.chips span { background: var(--krem); border-radius: 99px; padding: 8px 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--cok); border: 1px solid transparent; transition: 0.2s; }
+.chips span.aktif, .chips span:hover { background: var(--cok); color: #fff; }
+
+/* KARTU BUKU */
+.buku { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-bottom: 50px; }
+.kartu { background: #fff; border: 1px solid #eaddd3; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(107, 61, 42, 0.04); display: flex; flex-direction: column; }
+.sampul { height: 180px; display: grid; place-items: center; text-align: center; padding: 16px; font-size: 18px; color: #fff; font-weight: 700; line-height: 1.3; }
+.info { padding: 16px; font-size: 13px; display: flex; flex-direction: column; flex: 1; }
+.info b { display: block; font-size: 15px; margin-bottom: 4px; color: var(--cok); }
+.tag { display: inline-block; background: var(--krem); border-radius: 99px; padding: 4px 12px; font-size: 12px; margin: 8px 0; color: var(--cok); font-weight: 500; align-self: flex-start; }
+.info button { width: 100%; }
+.info button.merah { margin-top: 8px; }
+
+/* TABEL & FORMULIR */
+.box { background: #fff; border: 1px solid #eaddd3; border-radius: 16px; padding: 24px; margin-bottom: 30px; overflow-x: auto; box-shadow: 0 4px 12px rgba(107, 61, 42, 0.04); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid #f0e2d6; }
+th { color: var(--abu); font-weight: 600; }
+.badge { padding: 4px 12px; border-radius: 99px; font-size: 12px; background: #fde7c8; color: #8a5200; font-weight: 600; }
+.badge.ok { background: #d9f0dc; color: #1c6b2b; }
+input, select, textarea { width: 100%; padding: 12px; margin: 6px 0 16px; border: 1px solid #d9c5b8; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+input:focus, select:focus, textarea:focus { border-color: var(--cok); }
+input:disabled { background: var(--krem); color: var(--abu); cursor: not-allowed; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.prev { max-height: 120px; border-radius: 8px; border: 1px solid #eaddd3; margin-bottom: 14px; display: block; }
+.aksi { display: flex; gap: 6px; }
+
+/* KOLOM PASSWORD + IKON MATA */
+.pw-wrap { position: relative; margin: 6px 0 16px; }
+.pw-wrap input { margin: 0; padding-right: 46px; }
+.pw-wrap .mata { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; padding: 0; border-radius: 50%; background: transparent; color: var(--abu); display: flex; align-items: center; justify-content: center; }
+.pw-wrap .mata:hover { background: var(--krem); color: var(--cok); opacity: 1; }
+.pw-wrap .mata svg { width: 20px; height: 20px; }
+
+/* MODAL */
+.modal { position: fixed; inset: 0; background: rgba(74, 43, 29, 0.6); display: grid; place-items: center; z-index: 10; overflow: auto; padding: 20px; }
+.modal .box { width: min(440px, 100%); margin: auto; padding: 32px; }
+
+/* PENGATURAN AKUN */
+#modalSeting .box { width: min(480px, 100%); }
+#modalSeting h4 { margin: 4px 0 12px; color: var(--cok); font-size: 16px; }
+#modalSeting hr { border: 0; border-top: 1px solid #eaddd3; margin: 24px 0; }
+
+/* POPUP KONFIRMASI */
+#konfirm { z-index: 30; }
+#konfirm .box { text-align: center; padding: 32px 28px; width: min(400px, 100%); }
+#konfirm .ikon { width: 64px; height: 64px; border-radius: 50%; background: #fde7c8; color: #b3261e; font-size: 30px; font-weight: 700; display: grid; place-items: center; margin: 0 auto 16px; }
+#konfirm h3 { margin: 0 0 8px; color: var(--cok); font-size: 22px; }
+#konfirm p { margin: 0 0 24px; color: var(--abu); font-size: 14px; line-height: 1.5; }
+#konfirm .aksi { justify-content: center; gap: 10px; }
+
+/* FOOTER */
+footer { flex-shrink: 0; margin-top: auto; width: 100%; background: var(--cok); color: rgba(255,255,255,0.8); padding: 24px; text-align: center; font-size: 14px; }
+
+#pesan { position: fixed; bottom: 24px; right: 24px; padding: 14px 24px; border-radius: 8px; color: #fff; display: none; max-width: 320px; z-index: 40; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+/* RESPONSIVE */
+@media(max-width: 900px) {
+  .hero { padding: 40px 30px; }
+  .hero h1 { font-size: 38px; }
+  .kat { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width: 600px) {
+  header { padding: 16px 20px; gap: 12px; }
+  .cari { width: 100%; margin-left: 0; }
+  .cari input { width: 100%; }
+  .logo { width: 100%; }
+  nav { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; }
+  .hero { text-align: center; justify-content: center; }
+  .hero h1 { font-size: 32px; margin-left: auto; margin-right: auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="catalog-magazine.png" alt="Logo">
+    Perpustakaan Kecipir
+  </div>
+  <nav>
+    <a id="nBeranda" class="aktif">Beranda</a>
+    <a id="nKoleksi">Koleksi</a>
+    <a id="nPinjam">Peminjaman</a>
+    <a id="nAnggota" class="hidden">Anggota</a>
+  </nav>
+  <div class="cari">
+    <input id="cari" placeholder="Cari judul buku...">
+    <button id="btnCari">
+      <img src="search.png" alt="Cari">
+    </button>
+  </div>
+
+  <button id="btnMasuk" class="masuk">Masuk</button>
+
+  <div class="akun-menu hidden" id="wrapAkun">
+    <button class="akun-btn" id="btnAkun">
+      <img src="user.png" alt="Akun">
+    </button>
+    <div class="dropdown-konten" id="dropAkun">
+      <div class="dropdown-info">
+        <b id="ddEmail">email</b>
+        <span id="ddRole">role</span>
+      </div>
+      <button class="dropdown-item" id="btnSeting">
+        <img src="settings.png" alt="Pengaturan"> Pengaturan Akun
+      </button>
+      <button class="dropdown-item" id="btnKeluar">
+        <img src="sign-out-alt.png" alt="Keluar"> Keluar
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- BERANDA -->
+<section id="pBeranda">
+  <div class="hero">
+    <div>
+      <h1>Selamat Datang di<br>Perpustakaan Kami!</h1>
+      <p>Temukan buku favoritmu di sini.</p>
+      <button id="btnJelajah">Lihat Koleksi →</button>
+    </div>
+
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 150 Q 100 0 250 50 T 380 180 Q 300 300 150 280 T 50 150" fill="#f6e1cd" opacity="0.8"/>
+      <line x1="120" y1="80" x2="100" y2="60" stroke="#8a5238" stroke-width="4" stroke-linecap="round"/>
+      <line x1="140" y1="50" x2="130" y2="30" stroke="#8a5238" stroke-width="4" stroke-linecap="round"/>
+      <line x1="170" y1="60" x2="180" y2="40" stroke="#8a5238" stroke-width="4" stroke-linecap="round"/>
+
+      <rect x="70" y="210" width="260" height="40" rx="4" fill="#5c3624"/>
+      <rect x="78" y="220" width="244" height="12" fill="#fbf1e6"/>
+
+      <rect x="90" y="160" width="230" height="40" rx="4" fill="#8a5238"/>
+      <rect x="98" y="170" width="214" height="12" fill="#fbf1e6"/>
+
+      <rect x="110" y="110" width="200" height="40" rx="4" fill="#a8684a"/>
+      <rect x="118" y="120" width="184" height="12" fill="#fbf1e6"/>
+
+      <g transform="rotate(15, 300, 150)">
+        <rect x="290" y="60" width="60" height="180" rx="4" fill="#4a2b1d"/>
+        <rect x="338" y="66" width="8" height="168" fill="#fbf1e6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="wrap">
+    <div class="baris">
+      <h2 class="judul">Koleksi Buku</h2>
+      <button class="garis" id="btnSemua">Lihat Semua →</button>
+    </div>
+    <div class="kat" id="katBeranda"></div>
+  </div>
+</section>
+
+<!-- KOLEKSI -->
+<section id="pKoleksi" class="hidden"><div class="wrap">
+  <div class="baris"><div class="kiri">
+    <button class="kembali" data-kembali title="Kembali"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+    <h2 class="judul">Koleksi Buku</h2>
+  </div></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="box hidden" id="formBuku">
+    <h3 style="margin-top:0; color:var(--cok);" id="judulForm">Tambah Buku (Admin)</h3>
+    <div class="grid2">
+      <div><label>Judul</label><input id="bJudul"></div>
+      <div><label>Penulis</label><input id="bPenulis"></div>
+      <div><label>Penerbit</label><input id="bPenerbit"></div>
+      <div><label>Tahun</label><input id="bTahun" placeholder="2026"></div>
+      <div><label>Kategori</label><select id="bKat"></select></div>
+      <div><label>Stok</label><input id="bStok" type="number" min="0" value="1"></div>
+      <div style="grid-column: 1 / -1;">
+        <label>Foto Sampul (pilih file dari laptop)</label>
+        <img id="prevFoto" class="prev hidden" alt="Pratinjau">
+        <input id="bFoto" type="file" accept="image/*">
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <label>Sinopsis Singkat</label>
+        <textarea id="bDeskripsi" rows="3" style="resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div class="aksi">
+      <button id="btnTambah">Simpan Buku</button>
+      <button id="btnBatalEdit" class="abu hidden">Batal Edit</button>
+    </div>
+  </div>
+
+  <div class="buku" id="daftarBuku"></div>
+</div></section>
+
+<!-- PEMINJAMAN -->
+<section id="pPinjam" class="hidden"><div class="wrap">
+  <div class="baris"><div class="kiri">
+    <button class="kembali" data-kembali title="Kembali"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+    <h2 class="judul">Data Peminjaman</h2>
+  </div></div>
+  <div class="box"><table><thead><tr id="headPinjam"></tr></thead><tbody id="tbPinjam"></tbody></table></div>
+</div></section>
+
+<!-- ANGGOTA -->
+<section id="pAnggota" class="hidden"><div class="wrap">
+  <div class="baris"><div class="kiri">
+    <button class="kembali" data-kembali title="Kembali"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+    <h2 class="judul">Data Anggota</h2>
+  </div></div>
+  <div class="box"><table>
+    <thead><tr><th>NIM</th><th>Nama</th><th>Email</th><th>No. HP</th><th>Alamat</th><th>Aksi</th></tr></thead>
+    <tbody id="tbAnggota"></tbody></table></div>
+</div></section>
+
+<footer>© 2026 Perpustakaan Digital Kecipir. Semua Hak Dilindungi.</footer>
+
+<!-- MODAL LOGIN / DAFTAR -->
+<div class="modal hidden" id="modal">
+  <div class="box" id="boxLogin">
+    <h2 style="margin-top:0; color:var(--cok);">Masuk</h2>
+    <label>Email</label><input id="lEmail" type="email">
+    <label>Password</label><input id="lPass" type="password">
+    <button id="btnLogin" style="width:100%; margin-bottom:12px;">Masuk</button>
+    <button class="abu" id="keDaftar" style="width:100%; margin-bottom:12px;">Daftar anggota baru</button>
+    <button class="garis" id="tutup1" style="width:100%;">Batal</button>
+  </div>
+  <div class="box hidden" id="boxDaftar">
+    <h2 style="margin-top:0; color:var(--cok);">Daftar Anggota</h2>
+    <label>Nama</label><input id="rNama">
+    <label>Email</label><input id="rEmail" type="email">
+    <label>Password (min. 6)</label><input id="rPass" type="password">
+    <div class="grid2">
+      <div><label>NIM</label><input id="rNim"></div>
+      <div><label>No. HP</label><input id="rHp"></div>
+    </div>
+    <label>Alamat</label><input id="rAlamat">
+    <button id="btnDaftar" style="width:100%; margin-bottom:12px;">Daftar</button>
+    <button class="abu" id="keLogin" style="width:100%;">Kembali</button>
+  </div>
+</div>
+
+<!-- MODAL PENGATURAN AKUN -->
+<div class="modal hidden" id="modalSeting">
+  <div class="box">
+    <h2 style="margin-top:0; color:var(--cok);">Pengaturan Akun</h2>
+
+    <h4>Data Profil</h4>
+    <label>Nama</label><input id="sNama">
+    <label>Email</label><input id="sEmail" type="email">
+    <div id="sAnggota">
+      <label>NIM (hanya admin yang dapat mengubah)</label><input id="sNim" disabled>
+      <label>No. HP</label><input id="sHp">
+      <label>Alamat</label><input id="sAlamat">
+    </div>
+    <button id="btnSimpanProfil" style="width:100%;">Simpan Profil</button>
+
+    <hr>
+
+    <h4>Ubah Password</h4>
+    <label>Password Lama</label><input id="pLama" type="password">
+    <label>Password Baru (min. 6)</label><input id="pBaru" type="password">
+    <label>Ulangi Password Baru</label><input id="pBaru2" type="password">
+    <button id="btnSimpanPass" style="width:100%; margin-bottom:12px;">Ubah Password</button>
+
+    <button class="garis" id="tutupSeting" style="width:100%;">Tutup</button>
+  </div>
+</div>
+
+<!-- MODAL UBAH ANGGOTA (ADMIN) -->
+<div class="modal hidden" id="modalAnggota">
+  <div class="box">
+    <h2 style="margin-top:0; color:var(--cok);">Ubah Data Anggota</h2>
+    <label>NIM</label><input id="aNim">
+    <label>Nama</label><input id="aNama">
+    <label>No. HP</label><input id="aHp">
+    <label>Alamat</label><input id="aAlamat">
+    <button id="btnSimpanAnggota" style="width:100%; margin-bottom:12px;">Simpan Perubahan</button>
+    <button class="garis" id="tutupAnggota" style="width:100%;">Batal</button>
+  </div>
+</div>
+
+<!-- POPUP KONFIRMASI -->
+<div class="modal hidden" id="konfirm">
+  <div class="box">
+    <div class="ikon">!</div>
+    <h3 id="kJudul">Konfirmasi</h3>
+    <p id="kTeks"></p>
+    <div class="aksi">
+      <button class="abu" id="kTidak">Batal</button>
+      <button class="merah" id="kYa">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div id="pesan"></div>
+
+<script>
+const API='/api';
+const KATEGORI=['Fiksi','Non-Fiksi','Pendidikan','Sains','Lainnya'];
+const IKON={
+ 'Fiksi':'<svg viewBox="0 0 80 80"><path d="M8 24c10-5 22-5 32 2v40c-10-7-22-7-32-2z" fill="#f6e1cd" stroke="#6b3d2a" stroke-width="4" stroke-linejoin="round"/><path d="M72 24c-10-5-22-5-32 2v40c10-7 22-7 32-2z" fill="#f6e1cd" stroke="#6b3d2a" stroke-width="4" stroke-linejoin="round"/><line x1="16" y1="36" x2="32" y2="36" stroke="#6b3d2a" stroke-width="3" stroke-linecap="round"/><line x1="16" y1="46" x2="32" y2="46" stroke="#6b3d2a" stroke-width="3" stroke-linecap="round"/><line x1="48" y1="36" x2="64" y2="36" stroke="#6b3d2a" stroke-width="3" stroke-linecap="round"/><line x1="48" y1="46" x2="64" y2="46" stroke="#6b3d2a" stroke-width="3" stroke-linecap="round"/></svg>',
+ 'Non-Fiksi':'<svg viewBox="0 0 80 80"><rect x="18" y="14" width="44" height="54" rx="4" fill="#6b3d2a"/><rect x="24" y="24" width="32" height="10" rx="2" fill="#fbf1e6"/><rect x="62" y="18" width="6" height="46" fill="#fbf1e6"/></svg>',
+ 'Pendidikan':'<svg viewBox="0 0 80 80"><path d="M40 16L12 32l28 16 28-16z" fill="#4a2b1d"/><path d="M24 40v14c0 6 32 6 32 0V40l-16 9z" fill="#6b3d2a"/><rect x="64" y="32" width="4" height="24" fill="#e0a77a"/><circle cx="66" cy="58" r="4" fill="#e0a77a"/></svg>',
+ 'Sains':'<svg viewBox="0 0 80 80"><path d="M32 12h16v6h-4v22l16 26c3 5-1 8-6 8H26c-5 0-9-3-6-8l16-26V18h-4z" fill="#fff" stroke="#6b3d2a" stroke-width="4" stroke-linejoin="round"/><path d="M28 54h24l5 8H23z" fill="#6b3d2a"/></svg>',
+ 'Lainnya':''
+};
+const warna=['#6b3d2a','#8a5238','#a8684a','#4a2b1d','#5c3624','#72432a'];
+let token=sessionStorage.getItem('token'), role=sessionStorage.getItem('role'), email=sessionStorage.getItem('email')||'';
+let buku=[], anggotaList=[], filterKat='', kataCari='', editId=null, editAnggotaId=null;
+let halamanSekarang='Beranda', riwayat=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rupiah=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
+
+function pesan(t,ok=true){const p=$('pesan');p.textContent=t;p.style.background=ok?'#2e7d32':'#b3261e';p.style.display='block';setTimeout(()=>p.style.display='none',3500)}
+function keluarLokal(){sessionStorage.clear();token=role=null;email='';status()}
+
+async function api(path,method='GET',body=null){
+  const h={'Accept':'application/json'};
+  const isForm=body instanceof FormData;
+  if(body&&!isForm)h['Content-Type']='application/json';
+  if(token)h['Authorization']='Bearer '+token;
+  const r=await fetch(API+path,{method,headers:h,body:body?(isForm?body:JSON.stringify(body)):undefined});
+  const d=await r.json().catch(()=>({}));
+  if(r.status===401&&token&&path!=='/login'){keluarLokal();throw new Error('Sesi habis, silakan masuk lagi')}
+  if(!r.ok)throw new Error((d.errors&&Object.values(d.errors)[0][0])||d.message||'Terjadi kesalahan');
+  return d;
+}
+
+function kartu(b){
+  const w = warna[b.id % warna.length];
+
+  const sampul = b.foto
+    ? `<img src="/${esc(b.foto)}" alt="Sampul" style="width:100%; height:180px; object-fit:cover; border-bottom:1px solid #eaddd3; background:#f6ebd8;">`
+    : `<div class="sampul" style="background:${w}">${esc(b.judul)}</div>`;
+
+  const sinopsis = b.deskripsi
+    ? `<p style="font-size:12px; color:var(--abu); margin:8px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${esc(b.deskripsi)}</p>`
+    : '';
+
+  return `<div class="kartu">
+    ${sampul}
+    <div class="info">
+      <b>${esc(b.judul)}</b>${esc(b.penulis)}
+      <span class="tag">${esc(b.kategori||'Lainnya')}</span>
+      ${sinopsis}
+      <div style="margin-top:auto; font-size:12px; margin-bottom:12px; color:var(--teks);">Sisa Stok: <b>${b.stok}</b></div>
+      ${role === 'anggota' ? `<button class="kecil" data-aksi="pinjam" data-id="${b.id}" ${b.stok<1?'disabled':''}>${b.stok<1?'Stok Habis':'Pinjam Buku'}</button>` : ''}
+      ${role === 'admin' ? `<button class="kecil abu" data-aksi="edit" data-id="${b.id}">Edit Buku</button>
+      <button class="kecil merah" data-aksi="hapus" data-id="${b.id}">Hapus Buku</button>` : ''}
+    </div>
+  </div>`;
+}
+
+// Berpindah halaman, sambil mencatat riwayat untuk tombol kembali
+function halaman(h,dariKembali=false){
+  if(!dariKembali&&h!==halamanSekarang){riwayat.push(halamanSekarang)}
+  halamanSekarang=h;
+  ['Beranda','Koleksi','Pinjam','Anggota'].forEach(x=>{
+    $('p'+x).classList.toggle('hidden',x!==h);
+    $('n'+x).classList.toggle('aktif',x===h);
+  });
+  if(h==='Pinjam')muatPinjam();
+  if(h==='Anggota')muatAnggota();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Tombol kembali: ke halaman sebelumnya (atau Beranda bila tidak ada riwayat)
+document.addEventListener('click',e=>{
+  if(!e.target.closest('[data-kembali]'))return;
+  let tujuan=riwayat.pop()||'Beranda';
+  if(tujuan==='Anggota'&&role!=='admin')tujuan='Beranda';
+  halaman(tujuan,true);
+});
+
+async function muatBuku(){
+  try{
+    const d=await api('/buku'+(kataCari?'?cari='+encodeURIComponent(kataCari):''));
+    buku=d.data;renderKoleksi();
+  }catch(e){pesan(e.message,false)}
+}
+
+function renderKoleksi(){
+  const l=filterKat?buku.filter(b=>(b.kategori||'Lainnya')===filterKat):buku;
+  $('daftarBuku').innerHTML=l.map(kartu).join('')||'<p style="grid-column:1/-1; text-align:center;">Buku tidak ditemukan</p>';
+  $('chips').innerHTML=[''].concat(KATEGORI).map(k=>`<span data-kat="${esc(k)}" class="${k===filterKat?'aktif':''}">${k||'Semua'}</span>`).join('');
+}
+
+$('katBeranda').innerHTML=KATEGORI.slice(0,4).map(k=>`<div data-kat="${k}">${IKON[k]}${k}</div>`).join('');
+$('bKat').innerHTML=KATEGORI.map(k=>`<option>${k}</option>`).join('');
+
+async function muatPinjam(){
+  if(!token){$('headPinjam').innerHTML='';$('tbPinjam').innerHTML='<tr><td colspan="7">Silakan masuk terlebih dahulu.</td></tr>';return}
+  try{
+    const d=await api('/peminjaman'),adm=role==='admin';
+    $('headPinjam').innerHTML=(adm?'<th>Anggota</th>':'')+'<th>Buku</th><th>Pinjam</th><th>Jatuh Tempo</th><th>Kembali</th><th>Denda</th><th>Status</th>'+(adm?'<th>Aksi</th>':'');
+    $('tbPinjam').innerHTML=d.data.map(p=>`<tr>
+      ${adm?`<td>${esc(p.anggota?.nama)} (${esc(p.anggota?.nim)})</td>`:''}
+      <td>${esc(p.buku?.judul)}</td><td>${esc(String(p.tanggal_pinjam).slice(0,10))}</td>
+      <td>${esc(String(p.tanggal_jatuh_tempo).slice(0,10))}</td>
+      <td>${p.tanggal_kembali?esc(String(p.tanggal_kembali).slice(0,10)):'-'}</td><td>${rupiah(p.denda)}</td>
+      <td><span class="badge ${p.status==='dikembalikan'?'ok':''}">${esc(p.status)}</span></td>
+      ${adm?`<td>${p.status==='dipinjam'?`<button class="kecil" data-aksi="kembali" data-id="${p.id}">Kembalikan</button>`:'<span style="color:var(--abu); font-size:12px; font-weight:600;">Selesai</span>'}</td>`:''}
+    </tr>`).join('')||'<tr><td colspan="8">Belum ada peminjaman</td></tr>';
+  }catch(e){pesan(e.message,false)}
+}
+
+async function muatAnggota(){
+  try{
+    const d=await api('/anggota');
+    anggotaList=d.data;
+    $('tbAnggota').innerHTML=d.data.map(a=>`<tr><td>${esc(a.nim)}</td><td>${esc(a.nama)}</td><td>${esc(a.user?.email)}</td><td>${esc(a.no_hp)}</td><td>${esc(a.alamat)}</td>
+      <td><div class="aksi"><button class="kecil abu" data-aksi="editAnggota" data-id="${a.id}">Ubah</button><button class="kecil merah" data-aksi="hapusAnggota" data-id="${a.id}">Hapus</button></div></td></tr>`).join('')||'<tr><td colspan="6">Belum ada anggota</td></tr>';
+  }catch(e){pesan(e.message,false)}
+}
+
+function status(){
+  const login=!!token;
+  $('btnMasuk').classList.toggle('hidden',login);
+  $('wrapAkun').classList.toggle('hidden',!login);
+  $('ddEmail').textContent=login?email:'';
+  $('ddRole').textContent=login?(role==='admin'?'Administrator':'Anggota'):'';
+  $('nAnggota').classList.toggle('hidden',role!=='admin');
+  $('formBuku').classList.toggle('hidden',role!=='admin');
+  renderKoleksi();
+}
+
+const keKoleksi=()=>{filterKat='';kataCari='';$('cari').value='';halaman('Koleksi');muatBuku()};
+$('nBeranda').onclick=()=>halaman('Beranda');
+$('nKoleksi').onclick=keKoleksi;
+$('nPinjam').onclick=()=>halaman('Pinjam');
+$('nAnggota').onclick=()=>halaman('Anggota');
+$('btnJelajah').onclick=keKoleksi;
+$('btnSemua').onclick=keKoleksi;
+$('btnCari').onclick=()=>{kataCari=$('cari').value.trim();filterKat='';halaman('Koleksi');muatBuku()};
+$('cari').onkeydown=e=>{if(e.key==='Enter')$('btnCari').click()};
+
+document.addEventListener('click',e=>{
+  const k=e.target.closest('[data-kat]');
+  if(k){const v=k.dataset.kat;filterKat=(v&&filterKat===v)?'':v;halaman('Koleksi');renderKoleksi()}
+});
+
+// ---------- Ikon mata untuk semua kolom password ----------
+const SVG_MATA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const SVG_MATA_CORET='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
+document.querySelectorAll('input[type=password]').forEach(inp=>{
+  const w=document.createElement('div');
+  w.className='pw-wrap';
+  inp.parentNode.insertBefore(w,inp);
+  w.appendChild(inp);
+  const b=document.createElement('button');
+  b.type='button';
+  b.className='mata';
+  b.title='Tampilkan password';
+  b.innerHTML=SVG_MATA;
+  b.onclick=()=>{
+    const sembunyi=inp.type==='password';
+    inp.type=sembunyi?'text':'password';
+    b.innerHTML=sembunyi?SVG_MATA_CORET:SVG_MATA;
+    b.title=sembunyi?'Sembunyikan password':'Tampilkan password';
+  };
+  w.appendChild(b);
+});
+
+// ---------- Dropdown akun ----------
+$('btnAkun').onclick=(e)=>{
+  e.stopPropagation();
+  $('dropAkun').classList.toggle('tampil');
+};
+document.addEventListener('click',(e)=>{
+  if(!e.target.closest('.akun-menu')) $('dropAkun').classList.remove('tampil');
+});
+
+// ---------- Pengaturan akun ----------
+$('btnSeting').onclick=async()=>{
+  $('dropAkun').classList.remove('tampil');
+  try{
+    const d=await api('/profil');
+    const u=d.data,a=u.anggota;
+    $('sNama').value=u.name||'';
+    $('sEmail').value=u.email||'';
+    $('sAnggota').classList.toggle('hidden',!a);
+    $('sNim').value=a?a.nim:'';
+    $('sHp').value=a?(a.no_hp||''):'';
+    $('sAlamat').value=a?(a.alamat||''):'';
+    ['pLama','pBaru','pBaru2'].forEach(i=>$(i).value='');
+    $('modalSeting').classList.remove('hidden');
+  }catch(e){pesan(e.message,false)}
+};
+$('tutupSeting').onclick=()=>$('modalSeting').classList.add('hidden');
+$('modalSeting').onclick=e=>{if(e.target.id==='modalSeting')$('modalSeting').classList.add('hidden')};
+
+$('btnSimpanProfil').onclick=async()=>{
+  try{
+    const d=await api('/profil','PUT',{
+      name:$('sNama').value,
+      email:$('sEmail').value,
+      no_hp:$('sHp').value,
+      alamat:$('sAlamat').value
+    });
+    email=d.data.email;
+    sessionStorage.setItem('email',email);
+    status();
+    pesan('Profil berhasil diperbarui');
+  }catch(e){pesan(e.message,false)}
+};
+
+$('btnSimpanPass').onclick=async()=>{
+  try{
+    if($('pBaru').value!==$('pBaru2').value){pesan('Konfirmasi password baru tidak sama',false);return}
+    await api('/profil/password','PUT',{
+      password_lama:$('pLama').value,
+      password_baru:$('pBaru').value,
+      password_baru_confirmation:$('pBaru2').value
+    });
+    ['pLama','pBaru','pBaru2'].forEach(i=>$(i).value='');
+    pesan('Password berhasil diubah');
+  }catch(e){pesan(e.message,false)}
+};
+
+// ---------- Ubah data anggota (admin) ----------
+$('tutupAnggota').onclick=()=>$('modalAnggota').classList.add('hidden');
+$('modalAnggota').onclick=e=>{if(e.target.id==='modalAnggota')$('modalAnggota').classList.add('hidden')};
+$('btnSimpanAnggota').onclick=async()=>{
+  try{
+    await api('/anggota/'+editAnggotaId,'PUT',{
+      nim:$('aNim').value,
+      nama:$('aNama').value,
+      no_hp:$('aHp').value,
+      alamat:$('aAlamat').value
+    });
+    $('modalAnggota').classList.add('hidden');
+    pesan('Data anggota diperbarui');
+    muatAnggota();
+  }catch(e){pesan(e.message,false)}
+};
+
+// ---------- Login / daftar ----------
+$('btnMasuk').onclick=()=>$('modal').classList.remove('hidden');
+$('tutup1').onclick=()=>$('modal').classList.add('hidden');
+$('keDaftar').onclick=()=>{$('boxLogin').classList.add('hidden');$('boxDaftar').classList.remove('hidden')};
+$('keLogin').onclick=()=>{$('boxDaftar').classList.add('hidden');$('boxLogin').classList.remove('hidden')};
+$('lPass').onkeydown=e=>{if(e.key==='Enter')$('btnLogin').click()};
+$('btnLogin').onclick=async()=>{
+  try{
+    const d=await api('/login','POST',{email:$('lEmail').value,password:$('lPass').value});
+    token=d.token;role=d.role;email=$('lEmail').value;
+    sessionStorage.setItem('token',token);sessionStorage.setItem('role',role);sessionStorage.setItem('email',email);
+    $('modal').classList.add('hidden');$('lPass').value='';
+    status();muatBuku();pesan('Login berhasil sebagai '+role);
+  }catch(e){pesan(e.message,false)}
+};
+$('btnDaftar').onclick=async()=>{
+  try{
+    await api('/register','POST',{name:$('rNama').value,email:$('rEmail').value,password:$('rPass').value,nim:$('rNim').value,no_hp:$('rHp').value,alamat:$('rAlamat').value});
+    pesan('Registrasi berhasil, silakan masuk');$('keLogin').click();
+  }catch(e){pesan(e.message,false)}
+};
+$('btnKeluar').onclick=async()=>{
+  $('dropAkun').classList.remove('tampil');
+  try{await api('/logout','POST')}catch(e){}
+  keluarLokal();resetForm();riwayat=[];halaman('Beranda',true);
+};
+
+// ---------- Form tambah / edit buku ----------
+function resetForm(){
+  ['bJudul','bPenulis','bPenerbit','bTahun','bDeskripsi'].forEach(i=>$(i).value='');
+  $('bFoto').value='';$('bStok').value=1;$('bKat').value=KATEGORI[0];
+  $('prevFoto').classList.add('hidden');$('prevFoto').removeAttribute('src');
+  editId=null;
+  $('btnTambah').textContent='Simpan Buku';
+  $('judulForm').textContent='Tambah Buku (Admin)';
+  $('btnBatalEdit').classList.add('hidden');
+}
+
+$('bFoto').onchange=()=>{
+  const f=$('bFoto').files[0];
+  if(f){$('prevFoto').src=URL.createObjectURL(f);$('prevFoto').classList.remove('hidden')}
+};
+$('btnBatalEdit').onclick=resetForm;
+
+$('btnTambah').onclick=async()=>{
+  try{
+    const fd=new FormData();
+    fd.append('judul',$('bJudul').value);
+    fd.append('penulis',$('bPenulis').value);
+    fd.append('penerbit',$('bPenerbit').value);
+    fd.append('tahun',$('bTahun').value);
+    fd.append('kategori',$('bKat').value);
+    fd.append('stok',$('bStok').value);
+    fd.append('deskripsi',$('bDeskripsi').value);
+    if($('bFoto').files[0])fd.append('foto',$('bFoto').files[0]);
+
+    if(editId){
+      await api('/buku/'+editId+'/ubah','POST',fd);
+      pesan('Buku berhasil diperbarui');
+    }else{
+      await api('/buku','POST',fd);
+      pesan('Buku berhasil ditambahkan');
+    }
+    resetForm();
+    muatBuku();
+  }catch(e){pesan(e.message,false)}
+};
+
+// Popup konfirmasi bertema
+function konfirmasi(teks, judul='Konfirmasi', tombol='Ya, Hapus'){
+  return new Promise(res=>{
+    $('kJudul').textContent=judul;
+    $('kTeks').textContent=teks;
+    $('kYa').textContent=tombol;
+    $('konfirm').classList.remove('hidden');
+    const tutup=v=>{
+      $('konfirm').classList.add('hidden');
+      $('kYa').onclick=$('kTidak').onclick=$('konfirm').onclick=null;
+      res(v);
+    };
+    $('kYa').onclick=()=>tutup(true);
+    $('kTidak').onclick=()=>tutup(false);
+    $('konfirm').onclick=e=>{if(e.target.id==='konfirm')tutup(false)};
+  });
+}
+
+// ---------- Tombol-tombol aksi ----------
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('button[data-aksi]');if(!b)return;
+  const id=b.dataset.id,aksi=b.dataset.aksi;
+  try{
+    if(aksi==='pinjam'){
+      await api('/peminjaman','POST',{buku_id:Number(id)});
+      pesan('Peminjaman berhasil, jatuh tempo 7 hari');muatBuku();
+    }
+    if(aksi==='hapus'){
+      if(!await konfirmasi('Buku ini akan dihapus beserta fotonya. Tindakan ini tidak bisa dibatalkan.','Hapus Buku?'))return;
+      await api('/buku/'+id,'DELETE');pesan('Buku dihapus');
+      if(editId==id)resetForm();
+      muatBuku();
+    }
+    if(aksi==='kembali'){
+      const d=await api('/peminjaman/'+id+'/kembali','PUT');
+      pesan('Pengembalian diproses. Denda: '+rupiah(d.data.denda));muatPinjam();
+    }
+    if(aksi==='edit'){
+      const t=buku.find(x=>x.id==id);if(!t)return;
+      $('bJudul').value=t.judul||'';
+      $('bPenulis').value=t.penulis||'';
+      $('bPenerbit').value=t.penerbit||'';
+      $('bTahun').value=t.tahun||'';
+      $('bKat').value=t.kategori||'Lainnya';
+      $('bStok').value=t.stok??0;
+      $('bDeskripsi').value=t.deskripsi||'';
+      $('bFoto').value='';
+      if(t.foto){$('prevFoto').src='/'+t.foto;$('prevFoto').classList.remove('hidden')}
+      else{$('prevFoto').classList.add('hidden');$('prevFoto').removeAttribute('src')}
+      editId=id;
+      $('btnTambah').textContent='Update Buku';
+      $('judulForm').textContent='Edit Buku (Admin)';
+      $('btnBatalEdit').classList.remove('hidden');
+      $('formBuku').scrollIntoView({behavior:'smooth'});
+    }
+    if(aksi==='editAnggota'){
+      const a=anggotaList.find(x=>x.id==id);if(!a)return;
+      editAnggotaId=id;
+      $('aNim').value=a.nim||'';
+      $('aNama').value=a.nama||'';
+      $('aHp').value=a.no_hp||'';
+      $('aAlamat').value=a.alamat||'';
+      $('modalAnggota').classList.remove('hidden');
+    }
+    if(aksi==='hapusAnggota'){
+      if(!await konfirmasi('Anggota ini akan dihapus beserta akun dan riwayat pinjamnya.','Hapus Anggota?'))return;
+      await api('/anggota/'+id,'DELETE');pesan('Anggota dihapus');muatAnggota();
+    }
+  }catch(err){pesan(err.message,false)}
+});
+
+status();
+muatBuku();
+</script>
+</body>
+</html>

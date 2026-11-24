@@ -1,0 +1,350 @@
+openapi: 3.0.3
+info:
+  title: API Perpustakaan Kecipir
+  description: |
+    REST API sistem perpustakaan (modul Perpustakaan).
+    Ada dua peran: **admin** dan **anggota**.
+
+    Cara mencoba di halaman ini:
+    1. Jalankan `POST /login`, lalu salin nilai `token`.
+    2. Klik tombol **Authorize** di kanan atas, tempel token, lalu klik Authorize.
+    3. Coba endpoint lain dengan **Try it out**.
+
+    Akun admin: admin@perpus.test / admin123
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Server lokal
+tags:
+  - name: Autentikasi
+  - name: Profil
+  - name: Buku
+  - name: Anggota
+  - name: Peminjaman
+
+paths:
+  /register:
+    post:
+      tags: [Autentikasi]
+      summary: Daftar sebagai anggota baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, nim]
+              properties:
+                name: { type: string, example: Budi Santoso }
+                email: { type: string, example: budi@mail.test }
+                password: { type: string, example: budi123 }
+                nim: { type: string, example: "12345678" }
+                no_hp: { type: string, example: "081234567890" }
+                alamat: { type: string, example: Depok }
+      responses:
+        "201": { description: Registrasi berhasil }
+        "422": { description: Data tidak valid (email atau NIM sudah dipakai) }
+
+  /login:
+    post:
+      tags: [Autentikasi]
+      summary: Login dan mendapatkan token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: admin@perpus.test }
+                password: { type: string, example: admin123 }
+      responses:
+        "200":
+          description: Login berhasil
+          content:
+            application/json:
+              example:
+                message: Login berhasil
+                role: admin
+                token: 1|abcdef123456
+        "401": { description: Email atau password salah }
+
+  /logout:
+    post:
+      tags: [Autentikasi]
+      summary: Logout (menghapus token)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Logout berhasil }
+        "401": { description: Belum login }
+
+  /profil:
+    get:
+      tags: [Profil]
+      summary: Lihat data akun yang sedang login
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Data profil }
+    put:
+      tags: [Profil]
+      summary: Ubah profil (nama, email, no. HP, alamat)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                no_hp: { type: string }
+                alamat: { type: string }
+      responses:
+        "200": { description: Profil diperbarui }
+        "422": { description: Data tidak valid }
+
+  /profil/password:
+    put:
+      tags: [Profil]
+      summary: Ganti password
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password_lama, password_baru, password_baru_confirmation]
+              properties:
+                password_lama: { type: string }
+                password_baru: { type: string }
+                password_baru_confirmation: { type: string }
+      responses:
+        "200": { description: Password berhasil diubah }
+        "422": { description: Password lama salah atau konfirmasi tidak sama }
+
+  /buku:
+    get:
+      tags: [Buku]
+      summary: Daftar buku (publik)
+      parameters:
+        - name: cari
+          in: query
+          description: Kata kunci judul atau penulis
+          schema: { type: string }
+      responses:
+        "200":
+          description: Daftar buku
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Buku" }
+    post:
+      tags: [Buku]
+      summary: Tambah buku (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: "#/components/schemas/BukuInput" }
+      responses:
+        "201": { description: Buku ditambahkan }
+        "403": { description: Bukan admin }
+        "422": { description: Data tidak valid }
+
+  /buku/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [Buku]
+      summary: Detail satu buku (publik)
+      responses:
+        "200": { description: Detail buku }
+        "404": { description: Buku tidak ditemukan }
+    put:
+      tags: [Buku]
+      summary: Ubah buku tanpa foto (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                judul: { type: string }
+                penulis: { type: string }
+                penerbit: { type: string }
+                tahun: { type: string, example: "2024" }
+                kategori: { type: string }
+                stok: { type: integer }
+                deskripsi: { type: string }
+      responses:
+        "200": { description: Buku diubah }
+        "403": { description: Bukan admin }
+    delete:
+      tags: [Buku]
+      summary: Hapus buku (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Buku dihapus }
+        "403": { description: Bukan admin }
+
+  /buku/{id}/ubah:
+    post:
+      tags: [Buku]
+      summary: Ubah buku beserta foto (admin)
+      description: Memakai POST karena browser tidak dapat mengirim file lewat PUT.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: "#/components/schemas/BukuInput" }
+      responses:
+        "200": { description: Buku diubah }
+        "403": { description: Bukan admin }
+
+  /anggota:
+    get:
+      tags: [Anggota]
+      summary: Daftar semua anggota (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Daftar anggota }
+        "403": { description: Bukan admin }
+
+  /anggota/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [Anggota]
+      summary: Detail anggota (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Detail anggota }
+        "404": { description: Tidak ditemukan }
+    put:
+      tags: [Anggota]
+      summary: Ubah data anggota termasuk NIM (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nim: { type: string }
+                nama: { type: string }
+                no_hp: { type: string }
+                alamat: { type: string }
+      responses:
+        "200": { description: Anggota diubah }
+        "422": { description: NIM sudah dipakai }
+    delete:
+      tags: [Anggota]
+      summary: Hapus anggota beserta akunnya (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Anggota dihapus }
+
+  /peminjaman:
+    get:
+      tags: [Peminjaman]
+      summary: Daftar peminjaman
+      description: Admin melihat semua, anggota hanya melihat miliknya sendiri.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Daftar peminjaman }
+    post:
+      tags: [Peminjaman]
+      summary: Meminjam buku (anggota)
+      description: Stok berkurang 1, jatuh tempo 7 hari dari hari ini.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [buku_id]
+              properties:
+                buku_id: { type: integer, example: 1 }
+      responses:
+        "201": { description: Peminjaman berhasil }
+        "400": { description: Stok habis }
+        "403": { description: Hanya anggota yang boleh meminjam }
+
+  /peminjaman/{id}:
+    get:
+      tags: [Peminjaman]
+      summary: Detail satu peminjaman
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200": { description: Detail peminjaman }
+        "403": { description: Bukan milik Anda }
+
+  /peminjaman/{id}/kembali:
+    put:
+      tags: [Peminjaman]
+      summary: Proses pengembalian buku (admin)
+      description: Stok bertambah 1. Denda Rp1.000 per hari keterlambatan.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200": { description: Pengembalian diproses }
+        "400": { description: Buku sudah dikembalikan }
+        "403": { description: Bukan admin }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Token dari endpoint /login
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+  schemas:
+    Buku:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        judul: { type: string, example: Laskar Pelangi }
+        penulis: { type: string, example: Andrea Hirata }
+        penerbit: { type: string, example: Bentang Pustaka }
+        tahun: { type: string, example: "2005" }
+        kategori: { type: string, example: Fiksi }
+        stok: { type: integer, example: 5 }
+        foto: { type: string, nullable: true, example: uploads/buku/foto.jpg }
+        deskripsi: { type: string, nullable: true }
+    BukuInput:
+      type: object
+      required: [judul, penulis, penerbit, tahun, kategori, stok]
+      properties:
+        judul: { type: string }
+        penulis: { type: string }
+        penerbit: { type: string }
+        tahun: { type: string, example: "2024" }
+        kategori: { type: string, example: Fiksi }
+        stok: { type: integer, example: 3 }
+        deskripsi: { type: string }
+        foto: { type: string, format: binary }
